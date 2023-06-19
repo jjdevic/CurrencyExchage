@@ -132,6 +132,12 @@
         TextBox1.Text = String.Empty
     End Sub
 
+    Private Sub TextBox1_KeyDown(sender As Object, e As KeyEventArgs) Handles TextBox1.KeyDown
+        If e.KeyCode = Keys.Enter Then
+            Button1_Click(sender, e)
+        End If
+    End Sub
+
     Private Sub Label1_SizeChanged(sender As Object, e As EventArgs) Handles Label1.SizeChanged
         Label1.Left = (Me.ClientSize.Width - Label1.Width) \ 2
         Label1.Top = ((Me.ClientSize.Height - Label1.Height) \ 2) + 35
