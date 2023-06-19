@@ -26,6 +26,7 @@
         Label1.BackColor = Color.Transparent
         Label2.BackColor = Color.Transparent
         Label3.BackColor = Color.Transparent
+        Label4.BackColor = Color.Transparent
 
         TextBox1.BorderStyle = BorderStyle.None
 
@@ -64,28 +65,41 @@
         currency2.Add(New Item(prize:=10.643, id:="SEK"))
     End Sub
 
+    Private Sub Logic()
+        TextBox1.Update()
+        Dim num As Integer = Val(TextBox1.Text)
+        Dim result As Double = (num / conv1) * conv2
+        Dim text As String = result.ToString
+
+        If result.ToString.Contains(",") Then
+            Label1.Text = text.Substring(0, text.IndexOf(",") + 3)
+        Else
+            Label1.Text = text
+        End If
+        Label1.Text += " " & nameAux
+    End Sub
+
     Private Sub DateSet()
-        Dim dateAux As Date = Date.Parse("18/06/2023")
+        Dim dateAux As String = "18/06/2023"
         Label4.Text = "Last Update: " + dateAux
-        Label4.BackColor = Color.Transparent
     End Sub
 
     Private Sub ComboBox1_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ComboBox1.DrawItem
         If e.Index >= 0 Then
-            Dim text As String = ComboBox1.Items(e.Index).ToString()
-            Dim flag As Image = My.Resources.ResourceManager.GetObject(text.ToLower)
+            Dim texto As String = ComboBox1.Items(e.Index).ToString()
+            Dim flag As Image = My.Resources.ResourceManager.GetObject(texto.ToLower)
             Dim resizedFlag As New Bitmap(flag, 22, 15)
 
             'e.DrawBackground()
             e.Graphics.DrawImage(resizedFlag, e.Bounds.Left, e.Bounds.Top)
-            e.Graphics.DrawString(text, ComboBox1.Font, Brushes.Black, e.Bounds.Left + resizedFlag.Width, e.Bounds.Top + (e.Bounds.Height - ComboBox1.Font.Height) / 2)
+            e.Graphics.DrawString(texto, ComboBox1.Font, Brushes.Black, e.Bounds.Left + resizedFlag.Width, e.Bounds.Top + (e.Bounds.Height - ComboBox1.Font.Height) / 2)
         End If
     End Sub
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
         Dim aux As Item = ComboBox1.SelectedItem
         conv1 = aux.Prize
-        Button1_Click(sender, e)
+        Logic()
     End Sub
 
     Private Sub ComboBox2_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ComboBox2.DrawItem
@@ -104,9 +118,8 @@
         Dim aux As Item = ComboBox2.SelectedItem
         conv2 = aux.Prize
         nameAux = aux.Id
-        Button1_Click(sender, e)
+        Logic()
     End Sub
-
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Dim num As Integer = Val(TextBox1.Text)
@@ -133,12 +146,25 @@
         End If
     End Sub
 
-    Private Sub TextBox1_KeyPress(sender As Object, e As KeyPressEventArgs) Handles TextBox1.KeyPress
-        If Not Char.IsControl(e.KeyChar) AndAlso Not Char.IsDigit(e.KeyChar) Then
-            e.Handled = True
-        Else
+    Private Sub textBox1_KeyPress(sender As Object, e As KeyPressEventArgs) Handles TextBox1.KeyPress
+        ' Verificar si el carácter ingresado es numérico
+        If Not Char.IsNumber(e.KeyChar) AndAlso Not Char.IsControl(e.KeyChar) Then
+            e.Handled = True ' Ignorar el carácter no numérico
+        End If
+    End Sub
+
+    Private Sub TextBox1_Click(sender As Object, e As EventArgs) Handles TextBox1.Click
+        TextBox1.Text = String.Empty
+    End Sub
+
+    Private Sub TextBox1_KeyDown(sender As Object, e As KeyEventArgs) Handles TextBox1.KeyDown
+        If e.KeyCode = Keys.Enter Then
             Button1_Click(sender, e)
         End If
+    End Sub
+
+    Private Sub textBox1_TextChanged(sender As Object, e As EventArgs) Handles TextBox1.TextChanged
+        Logic()
     End Sub
 
     Private Sub Label1_SizeChanged(sender As Object, e As EventArgs) Handles Label1.SizeChanged
