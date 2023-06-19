@@ -35,6 +35,8 @@
         ComboBox1.FlatStyle = FlatStyle.Flat
         ComboBox2.FlatStyle = FlatStyle.Flat
 
+        DateSet()
+
         Label1.Text = "1 USD"
     End Sub
 
@@ -62,21 +64,28 @@
         currency2.Add(New Item(prize:=10.643, id:="SEK"))
     End Sub
 
+    Private Sub DateSet()
+        Dim dateAux As Date = Date.Parse("18/06/2023")
+        Label4.Text = "Last Update: " + dateAux
+        Label4.BackColor = Color.Transparent
+    End Sub
+
     Private Sub ComboBox1_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ComboBox1.DrawItem
         If e.Index >= 0 Then
-            Dim texto As String = ComboBox1.Items(e.Index).ToString()
-            Dim flag As Image = My.Resources.ResourceManager.GetObject(texto.ToLower)
+            Dim text As String = ComboBox1.Items(e.Index).ToString()
+            Dim flag As Image = My.Resources.ResourceManager.GetObject(text.ToLower)
             Dim resizedFlag As New Bitmap(flag, 22, 15)
 
             'e.DrawBackground()
             e.Graphics.DrawImage(resizedFlag, e.Bounds.Left, e.Bounds.Top)
-            e.Graphics.DrawString(texto, ComboBox1.Font, Brushes.Black, e.Bounds.Left + resizedFlag.Width, e.Bounds.Top + (e.Bounds.Height - ComboBox1.Font.Height) / 2)
+            e.Graphics.DrawString(text, ComboBox1.Font, Brushes.Black, e.Bounds.Left + resizedFlag.Width, e.Bounds.Top + (e.Bounds.Height - ComboBox1.Font.Height) / 2)
         End If
     End Sub
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
         Dim aux As Item = ComboBox1.SelectedItem
         conv1 = aux.Prize
+        Button1_Click(sender, e)
     End Sub
 
     Private Sub ComboBox2_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ComboBox2.DrawItem
@@ -95,7 +104,9 @@
         Dim aux As Item = ComboBox2.SelectedItem
         conv2 = aux.Prize
         nameAux = aux.Id
+        Button1_Click(sender, e)
     End Sub
+
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Dim num As Integer = Val(TextBox1.Text)
@@ -125,15 +136,7 @@
     Private Sub TextBox1_KeyPress(sender As Object, e As KeyPressEventArgs) Handles TextBox1.KeyPress
         If Not Char.IsControl(e.KeyChar) AndAlso Not Char.IsDigit(e.KeyChar) Then
             e.Handled = True
-        End If
-    End Sub
-
-    Private Sub TextBox1_Click(sender As Object, e As EventArgs) Handles TextBox1.Click
-        TextBox1.Text = String.Empty
-    End Sub
-
-    Private Sub TextBox1_KeyDown(sender As Object, e As KeyEventArgs) Handles TextBox1.KeyDown
-        If e.KeyCode = Keys.Enter Then
+        Else
             Button1_Click(sender, e)
         End If
     End Sub
