@@ -2,6 +2,7 @@
     Dim conv1, conv2 As Double
     Dim nameAux As String
     ReadOnly textAux As String = "1"
+
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim currency As New List(Of Item)
         Dim currency2 As New List(Of Item)
@@ -102,16 +103,13 @@
         Dim text As String = result.ToString
 
         If result.ToString.Contains(",") Then
-            Dim index As Integer = text.IndexOf(",")
-            Label1.Text = text.Substring(0, index + 3)
-        ElseIf text.Length >= 5 Then
-            Label1.Text = text.Substring(0, 5)
+            Label1.Text = text.Substring(0, text.IndexOf(",") + 3)
         Else
             Label1.Text = text
         End If
-        Label1.Text = Label1.Text & " " & nameAux
-
+        Label1.Text += " " & nameAux
     End Sub
+
     Private Sub TextBox1_GotFocus(sender As Object, e As EventArgs) Handles TextBox1.GotFocus
         If TextBox1.Text = textAux Then
             TextBox1.Text = ""
