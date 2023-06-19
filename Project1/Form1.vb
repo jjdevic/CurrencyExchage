@@ -86,13 +86,13 @@
 
     Private Sub ComboBox1_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ComboBox1.DrawItem
         If e.Index >= 0 Then
-            Dim texto As String = ComboBox1.Items(e.Index).ToString()
-            Dim flag As Image = My.Resources.ResourceManager.GetObject(texto.ToLower)
+            Dim text As String = ComboBox1.Items(e.Index).ToString()
+            Dim flag As Image = My.Resources.ResourceManager.GetObject(text.ToLower)
             Dim resizedFlag As New Bitmap(flag, 22, 15)
 
             'e.DrawBackground()
             e.Graphics.DrawImage(resizedFlag, e.Bounds.Left, e.Bounds.Top)
-            e.Graphics.DrawString(texto, ComboBox1.Font, Brushes.Black, e.Bounds.Left + resizedFlag.Width, e.Bounds.Top + (e.Bounds.Height - ComboBox1.Font.Height) / 2)
+            e.Graphics.DrawString(text, ComboBox1.Font, Brushes.Black, e.Bounds.Left + resizedFlag.Width, e.Bounds.Top + (e.Bounds.Height - ComboBox1.Font.Height) / 2)
         End If
     End Sub
 
