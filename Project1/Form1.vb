@@ -1,21 +1,27 @@
-﻿Public Class Form1
+﻿Imports System.Net.Http
+Imports System.Text.Json
+
+Public Class Form1
     Dim conv1, conv2 As Double
     Dim nameAux As String
+    Dim dateAux As String
+    Public currency As New List(Of Item)
+    Public currency2 As New List(Of Item)
     ReadOnly textAux As String = "1"
 
-    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        Dim currency As New List(Of Item)
-        Dim currency2 As New List(Of Item)
-
+    Private Async Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Me.DoubleBuffered = True
         ComboBox1.DropDownStyle = ComboBoxStyle.DropDownList
         ComboBox2.DropDownStyle = ComboBoxStyle.DropDownList
 
-        AddList(currency, currency2)
+        'AddList(currency, currency2)
+        Await GetExchangeRates()
 
         ComboBox1.DataSource = currency
         ComboBox2.DataSource = currency2
 
         Aesthetics()
+        Update()
     End Sub
 
     Private Sub Aesthetics()
@@ -36,7 +42,7 @@
         ComboBox1.FlatStyle = FlatStyle.Flat
         ComboBox2.FlatStyle = FlatStyle.Flat
 
-        DateSet()
+        Label4.Text = "Last Update: " + dateAux
 
         Label1.Text = "1 USD"
     End Sub
@@ -76,12 +82,9 @@
         Else
             Label1.Text = text
         End If
+        Label1.Refresh()
         Label1.Text += " " & nameAux
-    End Sub
 
-    Private Sub DateSet()
-        Dim dateAux As String = "18/06/2023"
-        Label4.Text = "Last Update: " + dateAux
     End Sub
 
     Private Sub ComboBox1_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ComboBox1.DrawItem
@@ -121,18 +124,18 @@
         Logic()
     End Sub
 
-    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
-        Dim num As Integer = Val(TextBox1.Text)
-        Dim result As Double = (num / conv1) * conv2
-        Dim text As String = result.ToString
-
-        If result.ToString.Contains(",") Then
-            Label1.Text = text.Substring(0, text.IndexOf(",") + 3)
-        Else
-            Label1.Text = text
-        End If
-        Label1.Text += " " & nameAux
-    End Sub
+    '    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+    '   Dim num As Integer = Val(TextBox1.Text)
+    '  Dim result As Double = (num / conv1) * conv2
+    ' Dim text As String = result.ToString
+    '
+    '    If result.ToString.Contains(",") Then
+    '        Label1.Text = text.Substring(0, text.IndexOf(",") + 3)
+    '    Else
+    '            Label1.Text = text
+    '    End If
+    '        Label1.Text += " " & nameAux
+    '    End Sub
 
     Private Sub TextBox1_GotFocus(sender As Object, e As EventArgs) Handles TextBox1.GotFocus
         If TextBox1.Text = textAux Then
@@ -147,9 +150,8 @@
     End Sub
 
     Private Sub textBox1_KeyPress(sender As Object, e As KeyPressEventArgs) Handles TextBox1.KeyPress
-        ' Verificar si el carácter ingresado es numérico
         If Not Char.IsNumber(e.KeyChar) AndAlso Not Char.IsControl(e.KeyChar) Then
-            e.Handled = True ' Ignorar el carácter no numérico
+            e.Handled = True
         End If
     End Sub
 
@@ -157,11 +159,11 @@
         TextBox1.Text = String.Empty
     End Sub
 
-    Private Sub TextBox1_KeyDown(sender As Object, e As KeyEventArgs) Handles TextBox1.KeyDown
-        If e.KeyCode = Keys.Enter Then
-            Button1_Click(sender, e)
-        End If
-    End Sub
+    '    Private Sub TextBox1_KeyDown(sender As Object, e As KeyEventArgs) Handles TextBox1.KeyDown
+    '    If e.KeyCode = Keys.Enter Then
+    '            Logic()
+    '    End If
+    '    End Sub
 
     Private Sub textBox1_TextChanged(sender As Object, e As EventArgs) Handles TextBox1.TextChanged
         Logic()
@@ -172,6 +174,36 @@
         Label1.Top = ((Me.ClientSize.Height - Label1.Height) \ 2) + 35
     End Sub
 
+    Public Async Function GetExchangeRates() As Task
+        Dim baseCurrency As String = "USD"
+        Dim urlBase As String = "http://api.exchangeratesapi.io/v1/latest"
+        Dim password As String = "c6559516eb58226838fbdc6b1e9c6cb7"
+        Dim targetCurrencies As String = "USD,EUR,MKD,RSD,ALL,BAM,BNG,RON,CHF,SEK"
+
+        Dim url As String = urlBase + "?access_key=" + password + "&symbols=" + targetCurrencies
+        Dim client As New HttpClient()
+
+        Dim response As HttpResponseMessage = Await client.GetAsync(url)
+        If response.IsSuccessStatusCode Then
+            Dim content As String = Await response.Content.ReadAsStringAsync()
+            dateAux = content.Substring(content.IndexOf("date") + 7, content.IndexOf("""") + 9)
+            Dim exchangeRates As ExchangeRates = JsonSerializer.Deserialize(Of ExchangeRates)(content)
+            Dim Rates As Dictionary(Of String, Double) = exchangeRates.rates
+            For Each values In Rates
+                currency.Add(New Item(values.Key, values.Value))
+                currency2.Add(New Item(values.Key, values.Value))
+            Next
+        Else
+            MsgBox("Connection Error")
+            Close()
+        End If
+    End Function
+End Class
+
+Public Class ExchangeRates
+    Public Property rates As Dictionary(Of String, Double)
+    Public Property base As String
+    Public Property dateAux As String
 End Class
 
 Public Class Item
