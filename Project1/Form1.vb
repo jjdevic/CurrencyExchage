@@ -9,19 +9,44 @@ Public Class Form1
     Public currency2 As New List(Of Item)
     ReadOnly textAux As String = "1"
 
+    Public Async Function GetExchangeRates() As Task
+        Dim baseCurrency As String = "USD"
+        Dim urlBase As String = "http://api.exchangeratesapi.io/v1/latest"
+        Dim password As String = "c6559516eb58226838fbdc6b1e9c6cb7"
+        Dim targetCurrencies As String = "USD,EUR,MKD,RSD,ALL,BAM,BNG,RON,CHF,SEK"
+        'If a new currency is added its correspondant flag is also necesary 
+
+        Dim url As String = urlBase + "?access_key=" + password + "&symbols=" + targetCurrencies
+        Dim client As New HttpClient()
+
+        Dim response As HttpResponseMessage = Await client.GetAsync(url)
+        If response.IsSuccessStatusCode Then
+            Dim content As String = Await response.Content.ReadAsStringAsync()
+            dateAux = content.Substring(content.IndexOf("date") + 7, content.IndexOf("""") + 9)
+            Dim exchangeRates As ExchangeRates = JsonSerializer.Deserialize(Of ExchangeRates)(content)
+            Dim Rates As Dictionary(Of String, Double) = exchangeRates.rates
+            For Each values In Rates
+                currency.Add(New Item(values.Key, values.Value))
+                currency2.Add(New Item(values.Key, values.Value))
+            Next
+        Else
+            MsgBox("Connection Error")
+            Close()
+        End If
+    End Function
+
     Private Async Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Me.DoubleBuffered = True
+        Await GetExchangeRates()
         ComboBox1.DropDownStyle = ComboBoxStyle.DropDownList
         ComboBox2.DropDownStyle = ComboBoxStyle.DropDownList
 
         'AddList(currency, currency2)
-        Await GetExchangeRates()
 
         ComboBox1.DataSource = currency
         ComboBox2.DataSource = currency2
 
         Aesthetics()
-        Update()
     End Sub
 
     Private Sub Aesthetics()
@@ -91,11 +116,13 @@ Public Class Form1
         If e.Index >= 0 Then
             Dim text As String = ComboBox1.Items(e.Index).ToString()
             Dim flag As Image = My.Resources.ResourceManager.GetObject(text.ToLower)
-            Dim resizedFlag As New Bitmap(flag, 22, 15)
-
-            'e.DrawBackground()
-            e.Graphics.DrawImage(resizedFlag, e.Bounds.Left, e.Bounds.Top)
-            e.Graphics.DrawString(text, ComboBox1.Font, Brushes.Black, e.Bounds.Left + resizedFlag.Width, e.Bounds.Top + (e.Bounds.Height - ComboBox1.Font.Height) / 2)
+            If flag IsNot Nothing Then
+                Dim resizedFlag As New Bitmap(flag, 22, 15)
+                e.Graphics.DrawImage(resizedFlag, e.Bounds.Left, e.Bounds.Top)
+                e.Graphics.DrawString(text, ComboBox1.Font, Brushes.Black, e.Bounds.Left + resizedFlag.Width, e.Bounds.Top + (e.Bounds.Height - ComboBox1.Font.Height) / 2)
+            Else
+                e.Graphics.DrawString(text, ComboBox1.Font, Brushes.Black, e.Bounds.Left, e.Bounds.Top + (e.Bounds.Height - ComboBox1.Font.Height) / 2)
+            End If
         End If
     End Sub
 
@@ -107,13 +134,15 @@ Public Class Form1
 
     Private Sub ComboBox2_DrawItem(sender As Object, e As DrawItemEventArgs) Handles ComboBox2.DrawItem
         If e.Index >= 0 Then
-            Dim texto As String = ComboBox2.Items(e.Index).ToString()
-            Dim flag As Image = My.Resources.ResourceManager.GetObject(texto.ToLower)
-            Dim resizedFlag As New Bitmap(flag, 22, 15)
-
-            'e.DrawBackground()
-            e.Graphics.DrawImage(resizedFlag, e.Bounds.Left, e.Bounds.Top)
-            e.Graphics.DrawString(texto, ComboBox2.Font, Brushes.Black, e.Bounds.Left + resizedFlag.Width, e.Bounds.Top + (e.Bounds.Height - ComboBox2.Font.Height) / 2)
+            Dim text As String = ComboBox2.Items(e.Index).ToString()
+            Dim flag As Image = My.Resources.ResourceManager.GetObject(text.ToLower)
+            If flag IsNot Nothing Then
+                Dim resizedFlag As New Bitmap(flag, 22, 15)
+                e.Graphics.DrawImage(resizedFlag, e.Bounds.Left, e.Bounds.Top)
+                e.Graphics.DrawString(Text, ComboBox2.Font, Brushes.Black, e.Bounds.Left + resizedFlag.Width, e.Bounds.Top + (e.Bounds.Height - ComboBox2.Font.Height) / 2)
+            Else
+                e.Graphics.DrawString(Text, ComboBox2.Font, Brushes.Black, e.Bounds.Left, e.Bounds.Top + (e.Bounds.Height - ComboBox2.Font.Height) / 2)
+            End If
         End If
     End Sub
 
@@ -149,7 +178,7 @@ Public Class Form1
         End If
     End Sub
 
-    Private Sub textBox1_KeyPress(sender As Object, e As KeyPressEventArgs) Handles TextBox1.KeyPress
+    Private Sub TextBox1_KeyPress(sender As Object, e As KeyPressEventArgs) Handles TextBox1.KeyPress
         If Not Char.IsNumber(e.KeyChar) AndAlso Not Char.IsControl(e.KeyChar) Then
             e.Handled = True
         End If
@@ -165,7 +194,7 @@ Public Class Form1
     '    End If
     '    End Sub
 
-    Private Sub textBox1_TextChanged(sender As Object, e As EventArgs) Handles TextBox1.TextChanged
+    Private Sub TextBox1_TextChanged(sender As Object, e As EventArgs) Handles TextBox1.TextChanged
         Logic()
     End Sub
 
@@ -174,30 +203,6 @@ Public Class Form1
         Label1.Top = ((Me.ClientSize.Height - Label1.Height) \ 2) + 35
     End Sub
 
-    Public Async Function GetExchangeRates() As Task
-        Dim baseCurrency As String = "USD"
-        Dim urlBase As String = "http://api.exchangeratesapi.io/v1/latest"
-        Dim password As String = "c6559516eb58226838fbdc6b1e9c6cb7"
-        Dim targetCurrencies As String = "USD,EUR,MKD,RSD,ALL,BAM,BNG,RON,CHF,SEK"
-
-        Dim url As String = urlBase + "?access_key=" + password + "&symbols=" + targetCurrencies
-        Dim client As New HttpClient()
-
-        Dim response As HttpResponseMessage = Await client.GetAsync(url)
-        If response.IsSuccessStatusCode Then
-            Dim content As String = Await response.Content.ReadAsStringAsync()
-            dateAux = content.Substring(content.IndexOf("date") + 7, content.IndexOf("""") + 9)
-            Dim exchangeRates As ExchangeRates = JsonSerializer.Deserialize(Of ExchangeRates)(content)
-            Dim Rates As Dictionary(Of String, Double) = exchangeRates.rates
-            For Each values In Rates
-                currency.Add(New Item(values.Key, values.Value))
-                currency2.Add(New Item(values.Key, values.Value))
-            Next
-        Else
-            MsgBox("Connection Error")
-            Close()
-        End If
-    End Function
 End Class
 
 Public Class ExchangeRates
