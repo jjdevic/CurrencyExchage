@@ -9,7 +9,7 @@ Public Class Form1
     Public currency2 As New List(Of Item)
     ReadOnly textAux As String = "1"
 
-    Public Async Function GetExchangeRates() As Task
+    Public Async Function GetExchangeRates() As Task        '1000 request per month
         Dim baseCurrency As String = "USD"
         Dim urlBase As String = "http://api.exchangeratesapi.io/v1/latest"
         Dim password As String = "c6559516eb58226838fbdc6b1e9c6cb7"
@@ -50,7 +50,7 @@ Public Class Form1
     End Sub
 
     Private Sub Aesthetics()
-        TextBox1.Text = textAux
+        'TextBox1.Text = textAux
         Me.BackgroundImage = My.Resources.gris2
         Me.BackgroundImageLayout = ImageLayout.Stretch
 
@@ -58,6 +58,9 @@ Public Class Form1
         Label2.BackColor = Color.Transparent
         Label3.BackColor = Color.Transparent
         Label4.BackColor = Color.Transparent
+
+        Label1.Text = "1 USD"
+        Label4.Text = "Last Update: " + dateAux
 
         TextBox1.BorderStyle = BorderStyle.None
 
@@ -67,9 +70,6 @@ Public Class Form1
         ComboBox1.FlatStyle = FlatStyle.Flat
         ComboBox2.FlatStyle = FlatStyle.Flat
 
-        Label4.Text = "Last Update: " + dateAux
-
-        Label1.Text = "1 USD"
     End Sub
 
     Private Sub AddList(currency As List(Of Item), currency2 As List(Of Item))
